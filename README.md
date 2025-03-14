@@ -1,6 +1,8 @@
 # Sistema de Finanças Pessoais
 
-O **Sistema de Finanças Pessoais** é um programa em Python que ajuda você a gerenciar suas finanças de forma eficiente. Ele permite registrar recebimentos, gastos, financiamentos e cartões de crédito, além de fornecer estatísticas mensais e relatórios completos. O programa salva os dados em um arquivo Excel para persistência e fácil acesso.
+O **Sistema de Finanças Pessoais** é um programa em Python que ajuda você a gerenciar suas finanças de forma eficiente. Ele permite registrar recebimentos, gastos, financiamentos, cartões de crédito e investimentos, além de fornecer estatísticas mensais, relatórios completos e análises de investimentos. O programa salva os dados em um arquivo Excel para persistência e fácil acesso.
+
+---
 
 ## Funcionalidades
 
@@ -8,13 +10,36 @@ O **Sistema de Finanças Pessoais** é um programa em Python que ajuda você a g
 - **Gastos**: Registre gastos por categoria, com opção de pagamento no débito ou crédito.
 - **Financiamentos**: Cadastre financiamentos e pague parcelas, com suporte para descontos em pagamentos antecipados.
 - **Cartões de Crédito**: Cadastre cartões de crédito, gerencie faturas e parcelas futuras.
-- **Estatísticas Mensais**: Visualize o saldo atual, gastos por categoria, parcelas pendentes e faturas.
-- **Relatório Completo**: Gere um relatório detalhado de todas as transações e parcelas.
+- **Investimentos**: Cadastre investimentos, adicione valores e registre rendimentos mensais.
+- **Estatísticas Mensais**: Visualize o saldo atual, gastos por categoria, parcelas pendentes, faturas e investimentos.
+- **Relatórios Mensais/Anuais**: Gere relatórios detalhados de recebimentos e gastos por mês ou ano.
+- **Relatório Completo**: Gere um relatório detalhado de todas as transações, parcelas e investimentos.
+
+---
+
+## Novas Funcionalidades
+
+### Categorias Personalizadas
+- Adicione novas categorias de gastos dinamicamente.
+- As categorias são salvas automaticamente e podem ser usadas em novos gastos.
+
+### Relatórios Mensais/Anuais
+- **Relatório Mensal**: Visualize o total de recebimentos, gastos e saldo de um mês específico.
+- **Relatório Anual**: Analise o desempenho financeiro ao longo de um ano, com dados agrupados por mês.
+
+### Investimentos
+- **Cadastro de Investimentos**: Registre investimentos com valor, produto, banco e rendimento mensal.
+- **Adicionar Valor a Investimentos Existentes**: Adicione valores a investimentos já cadastrados.
+- **Rendimentos Mensais**: Registre rendimentos mensais para acompanhar o crescimento dos investimentos.
+
+---
 
 ## Requisitos
 
 - Python 3.x
 - Bibliotecas necessárias: `pandas`, `openpyxl`
+
+---
 
 ## Instalação
 
@@ -30,6 +55,8 @@ O **Sistema de Finanças Pessoais** é um programa em Python que ajuda você a g
    ```bash
    python financas_pessoais.py
    ```
+
+---
 
 ## Como Usar
 
@@ -48,7 +75,12 @@ Ao iniciar o programa, você verá o seguinte menu:
 7. Pagar Parcela Antecipada
 8. Ver Estatísticas do Mês
 9. Ver Relatório Completo
-10. Sair
+10. Adicionar Categoria
+11. Gerar Relatório Mensal
+12. Gerar Relatório Anual
+13. Adicionar Investimento
+14. Adicionar Rendimento de Investimento
+15. Sair
 ```
 
 ### Exemplos de Uso
@@ -86,6 +118,28 @@ Ao iniciar o programa, você verá o seguinte menu:
 9. **Ver Relatório Completo**:
    - Gere um relatório detalhado de todas as transações e parcelas.
 
+10. **Adicionar Categoria**:
+    - Adicione uma nova categoria de gastos.
+    - Exemplo: `Nome da categoria: Lazer`.
+
+11. **Gerar Relatório Mensal**:
+    - Informe o mês e o ano para visualizar o relatório.
+    - Exemplo: `Mês: 10`, `Ano: 2023`.
+
+12. **Gerar Relatório Anual**:
+    - Informe o ano para visualizar o relatório anual.
+    - Exemplo: `Ano: 2023`.
+
+13. **Adicionar Investimento**:
+    - Informe o valor, produto, banco e rendimento mensal.
+    - Exemplo: `Valor: R$ 1000`, `Produto: Tesouro Direto`, `Banco: Banco X`, `Rendimento mensal: 0.5%`.
+
+14. **Adicionar Rendimento de Investimento**:
+    - Informe o produto, banco e valor do rendimento.
+    - Exemplo: `Produto: Tesouro Direto`, `Banco: Banco X`, `Rendimento: R$ 50`.
+
+---
+
 ### Salvamento de Dados
 
 Todos os dados são salvos automaticamente em um arquivo Excel (`financas.xlsx`) após cada operação. O arquivo contém abas separadas para:
@@ -96,10 +150,15 @@ Todos os dados são salvos automaticamente em um arquivo Excel (`financas.xlsx`)
 - Cartões de Crédito
 - Faturas
 - Parcelas
+- Investimentos
+
+---
 
 ## Contribuição
 
 Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar pull requests com melhorias, correções ou novas funcionalidades.
+
+---
 
 ## Licença
 

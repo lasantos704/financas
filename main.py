@@ -14,6 +14,7 @@ class FinancasPessoais:
         self.faturas = []  # Faturas dos cartões
         self.parcelas = []  # Parcelas de gastos no crédito
         self.categorias = set()
+        self.investimentos = []  # Lista de investimentos
 
         # Verifica se o arquivo Excel já existe
         if os.path.exists(self.arquivo_excel):
@@ -110,6 +111,10 @@ class FinancasPessoais:
             df_parcelas = pd.read_excel(self.arquivo_excel, sheet_name='Parcelas')
             self.parcelas = df_parcelas.to_dict('records')
 
+            # Carregar investimentos
+            df_investimentos = pd.read_excel(self.arquivo_excel, sheet_name='Investimentos')
+            self.investimentos = df_investimentos.to_dict('records')
+
             # Atualizar saldo
             self.saldo = sum(recebimento['valor'] for recebimento in self.recebimentos)
             self.saldo -= sum(sum(gasto['valor'] for gasto in gastos) for gastos in self.gastos.values())
@@ -147,6 +152,9 @@ class FinancasPessoais:
             # Salvar parcelas
             df_parcelas = pd.DataFrame(self.parcelas)
 
+            # Salvar investimentos
+            df_investimentos = pd.DataFrame(self.investimentos)
+
             with pd.ExcelWriter(self.arquivo_excel) as writer:
                 df_recebimentos.to_excel(writer, sheet_name='Recebimentos', index=False)
                 df_gastos.to_excel(writer, sheet_name='Gastos', index=False)
@@ -154,6 +162,7 @@ class FinancasPessoais:
                 df_cartoes.to_excel(writer, sheet_name='Cartoes', index=False)
                 df_faturas.to_excel(writer, sheet_name='Faturas', index=False)
                 df_parcelas.to_excel(writer, sheet_name='Parcelas', index=False)
+                df_investimentos.to_excel(writer, sheet_name='Investimentos', index=False)
 
             print(f"\nDados salvos em {self.arquivo_excel}")
         except Exception as e:
@@ -396,6 +405,59 @@ class FinancasPessoais:
             if not parcela['pago']:
                 print(f"{parcela['descricao']} (Parcela {parcela['parcela_atual']}/{parcela['parcelas_total']}): R$ {parcela['valor']:.2f}")
 
+    def adicionar_categoria(self, categoria):
+        if categoria in self.categorias:
+            print(f"A categoria '{categoria}' já existe.")
+        else:
+            self.categorias.add(categoria)
+            print(f"Categoria '{categoria}' adicionada com sucesso!")
+            self.salvar_dados()
+
+    def relatorio_mensal(self, mes, ano):
+        print(f"\n--- Relatório Mensal: {mes}/{ano} ---")
+        recebimentos_mes = [r for r in self.recebimentos if datetime.strptime(str(r['dia']), '%d').month == mes and datetime.strptime(str(r['dia']), '%d').year == ano]
+        gastos_mes = [g for gastos in self.gastos.values() for g in gastos if datetime.strptime(str(g['dia']), '%d').month == mes and datetime.strptime(str(g['dia']), '%d').year == ano]
+
+        total_recebimentos = sum(r['valor'] for r in recebimentos_mes)
+        total_gastos = sum(g['valor'] for g in gastos_mes)
+
+        print(f"Total de Recebimentos: R$ {total_recebimentos:.2f}")
+        print(f"Total de Gastos: R$ {total_gastos:.2f}")
+        print(f"Saldo do Mês: R$ {total_recebimentos - total_gastos:.2f}")
+
+    def relatorio_anual(self, ano):
+        print(f"\n--- Relatório Anual: {ano} ---")
+        for mes in range(1, 13):
+            self.relatorio_mensal(mes, ano)
+
+    def adicionar_investimento(self, valor, produto, banco, rendimento_mensal):
+        investimento_existente = next((inv for inv in self.investimentos if inv['produto'] == produto and inv['banco'] == banco), None)
+        if investimento_existente:
+            print(f"Investimento no produto '{produto}' do banco '{banco}' já existe.")
+            opcao = input("Deseja adicionar um valor a este investimento? (s/n): ").lower()
+            if opcao == 's':
+                investimento_existente['valor'] += valor
+                print(f"Valor adicionado ao investimento existente. Novo valor: R$ {investimento_existente['valor']:.2f}")
+            else:
+                print("Nenhum valor adicionado.")
+        else:
+            self.investimentos.append({
+                'valor': valor,
+                'produto': produto,
+                'banco': banco,
+                'rendimento_mensal': rendimento_mensal
+            })
+            print(f"Novo investimento cadastrado: {produto} no banco {banco}.")
+        self.salvar_dados()
+
+    def adicionar_rendimento_investimento(self, produto, banco, rendimento):
+        investimento = next((inv for inv in self.investimentos if inv['produto'] == produto and inv['banco'] == banco), None)
+        if investimento:
+            investimento['valor'] += rendimento
+            print(f"Rendimento de R$ {rendimento:.2f} adicionado ao investimento {produto} no banco {banco}.")
+            self.salvar_dados()
+        else:
+            print(f"Investimento no produto '{produto}' do banco '{banco}' não encontrado.")
 
 # Função para exibir o menu
 def exibir_menu():
@@ -409,9 +471,13 @@ def exibir_menu():
     print("7. Pagar Parcela Antecipada")
     print("8. Ver Estatísticas do Mês")
     print("9. Ver Relatório Completo")
-    print("10. Sair")
+    print("10. Adicionar Categoria")
+    print("11. Gerar Relatório Mensal")
+    print("12. Gerar Relatório Anual")
+    print("13. Adicionar Investimento")
+    print("14. Adicionar Rendimento de Investimento")
+    print("15. Sair")
     return input("Escolha uma opção: ")
-
 
 # Exemplo de uso
 financas = FinancasPessoais()
@@ -469,6 +535,32 @@ while True:
         financas.relatorio_completo()
 
     elif opcao == '10':
+        categoria = input("Nome da nova categoria: ")
+        financas.adicionar_categoria(categoria)
+
+    elif opcao == '11':
+        mes = int(input("Mês (1-12): "))
+        ano = int(input("Ano: "))
+        financas.relatorio_mensal(mes, ano)
+
+    elif opcao == '12':
+        ano = int(input("Ano: "))
+        financas.relatorio_anual(ano)
+
+    elif opcao == '13':
+        valor = financas.solicitar_valor("Valor do investimento: R$ ")
+        produto = input("Produto do investimento: ")
+        banco = input("Banco: ")
+        rendimento_mensal = financas.solicitar_valor("Rendimento mensal (%): ")
+        financas.adicionar_investimento(valor, produto, banco, rendimento_mensal)
+
+    elif opcao == '14':
+        produto = input("Produto do investimento: ")
+        banco = input("Banco: ")
+        rendimento = financas.solicitar_valor("Valor do rendimento: R$ ")
+        financas.adicionar_rendimento_investimento(produto, banco, rendimento)
+
+    elif opcao == '15':
         print("Saindo do sistema...")
         break
 
