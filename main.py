@@ -22,6 +22,10 @@ class FinancasPessoais:
         else:
             self.criar_arquivo_inicial()
 
+        # Cria a pasta de relatórios se não existir
+        if not os.path.exists("relatorios"):
+            os.makedirs("relatorios")
+
     def criar_arquivo_inicial(self):
         print("\n--- Bem-vindo ao Sistema de Finanças Pessoais ---")
         print("Arquivo Excel não encontrado. Criando novo arquivo...")
@@ -168,12 +172,9 @@ class FinancasPessoais:
         except Exception as e:
             print(f"Erro ao salvar dados no Excel: {e}")
 
-    def adicionar_recebimento(self, valor, dia):
-        if any(recebimento['dia'] == dia for recebimento in self.recebimentos):
-            print(f"Já existe um recebimento cadastrado no dia {dia}.")
-            return
+    def adicionar_recebimento(self, valor, dia, descricao):
         self.saldo += valor
-        self.recebimentos.append({'valor': valor, 'dia': dia})
+        self.recebimentos.append({'valor': valor, 'dia': dia, 'descricao': descricao})
         self.salvar_dados()
 
     def adicionar_gasto(self, valor, categoria, descricao, tipo='débito', cartao=None, parcelado=False, parcelas=1):
@@ -347,63 +348,106 @@ class FinancasPessoais:
         except (ValueError, IndexError):
             print("Opção inválida.")
 
+    def gerar_relatorio_txt(self, relatorio, nome_arquivo):
+        with open(nome_arquivo, 'w', encoding='utf-8') as arquivo:
+            arquivo.write(relatorio)
+        print(f"Relatório salvo em {nome_arquivo}")
+
     def estatisticas_mes(self):
-        print("\n--- Estatísticas do Mês ---")
-        print(f"Saldo Atual: R$ {self.saldo:.2f}")
+        relatorio = "\n--- Estatísticas do Mês ---\n"
+        relatorio += f"Saldo Atual: R$ {self.saldo:.2f}\n"
 
         total_gastos = sum(sum(gasto['valor'] for gasto in gastos) for gastos in self.gastos.values())
-        print(f"Total de Gastos: R$ {total_gastos:.2f}")
+        relatorio += f"Total de Gastos: R$ {total_gastos:.2f}\n"
 
-        print("\nGastos por Categoria:")
+        relatorio += "\nGastos por Categoria:\n"
         for categoria, gastos in self.gastos.items():
             total_categoria = sum(gasto['valor'] for gasto in gastos)
-            print(f"{categoria}: R$ {total_categoria:.2f}")
+            relatorio += f"{categoria}: R$ {total_categoria:.2f}\n"
 
-        print("\nFinanciamentos:")
+        relatorio += "\nFinanciamentos:\n"
         for financiamento in self.financiamentos:
-            print(f"{financiamento['descricao']}: {financiamento['parcelas_pagas']}/{financiamento['parcelas']} parcelas pagas")
+            relatorio += f"{financiamento['descricao']}: {financiamento['parcelas_pagas']}/{financiamento['parcelas']} parcelas pagas\n"
 
-        print("\nFaturas Pendentes:")
+        relatorio += "\nFaturas Pendentes:\n"
         for cartao in self.cartoes:
             fatura = sum(f['valor'] for f in self.faturas if f['cartao'] == cartao['nome'] and not f['pago'])
-            print(f"{cartao['nome']}: R$ {fatura:.2f}")
+            relatorio += f"{cartao['nome']}: R$ {fatura:.2f}\n"
 
-        print("\nParcelas Pendentes:")
+        relatorio += "\nParcelas Pendentes:\n"
         for parcela in self.parcelas:
             if not parcela['pago']:
-                print(f"{parcela['descricao']} (Parcela {parcela['parcela_atual']}/{parcela['parcelas_total']}): R$ {parcela['valor']:.2f}")
+                relatorio += f"{parcela['descricao']} (Parcela {parcela['parcela_atual']}/{parcela['parcelas_total']}): R$ {parcela['valor']:.2f}\n"
+
+        nome_arquivo = f"relatorios/estatisticas_mes_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        self.gerar_relatorio_txt(relatorio, nome_arquivo)
 
     def relatorio_completo(self):
-        print("\n--- Relatório Completo ---")
-        print(f"Saldo Atual: R$ {self.saldo:.2f}")
+        relatorio = "\n--- Relatório Completo ---\n"
+        relatorio += f"Saldo Atual: R$ {self.saldo:.2f}\n"
 
-        print("\nRecebimentos:")
+        relatorio += "\nRecebimentos:\n"
         for recebimento in self.recebimentos:
-            print(f"Dia {recebimento['dia']}: R$ {recebimento['valor']:.2f}")
+            relatorio += f"Dia {recebimento['dia']}: R$ {recebimento['valor']:.2f} - {recebimento['descricao']}\n"
 
-        print("\nGastos por Categoria:")
+        relatorio += "\nGastos por Categoria:\n"
         for categoria, gastos in self.gastos.items():
-            print(f"\n{categoria}:")
+            relatorio += f"\n{categoria}:\n"
             for gasto in gastos:
-                print(f"  {gasto['descricao']}: R$ {gasto['valor']:.2f} ({gasto['tipo']})")
+                relatorio += f"  {gasto['descricao']}: R$ {gasto['valor']:.2f} ({gasto['tipo']})\n"
 
-        print("\nFinanciamentos:")
+        relatorio += "\nFinanciamentos:\n"
         for financiamento in self.financiamentos:
-            print(f"{financiamento['descricao']}: {financiamento['parcelas_pagas']}/{financiamento['parcelas']} parcelas pagas")
+            relatorio += f"{financiamento['descricao']}: {financiamento['parcelas_pagas']}/{financiamento['parcelas']} parcelas pagas\n"
 
-        print("\nCartões de Crédito:")
+        relatorio += "\nCartões de Crédito:\n"
         for cartao in self.cartoes:
-            print(f"{cartao['nome']}: Limite R$ {cartao['limite']:.2f}, Vencimento dia {cartao['dia_vencimento']}")
+            relatorio += f"{cartao['nome']}: Limite R$ {cartao['limite']:.2f}, Vencimento dia {cartao['dia_vencimento']}\n"
 
-        print("\nFaturas Pendentes:")
+        relatorio += "\nFaturas Pendentes:\n"
         for cartao in self.cartoes:
             fatura = sum(f['valor'] for f in self.faturas if f['cartao'] == cartao['nome'] and not f['pago'])
-            print(f"{cartao['nome']}: R$ {fatura:.2f}")
+            relatorio += f"{cartao['nome']}: R$ {fatura:.2f}\n"
 
-        print("\nParcelas Pendentes:")
+        relatorio += "\nParcelas Pendentes:\n"
         for parcela in self.parcelas:
             if not parcela['pago']:
-                print(f"{parcela['descricao']} (Parcela {parcela['parcela_atual']}/{parcela['parcelas_total']}): R$ {parcela['valor']:.2f}")
+                relatorio += f"{parcela['descricao']} (Parcela {parcela['parcela_atual']}/{parcela['parcelas_total']}): R$ {parcela['valor']:.2f}\n"
+
+        nome_arquivo = f"relatorios/relatorio_completo_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        self.gerar_relatorio_txt(relatorio, nome_arquivo)
+
+    def relatorio_mensal(self, mes, ano):
+        relatorio = f"\n--- Relatório Mensal: {mes}/{ano} ---\n"
+        recebimentos_mes = [r for r in self.recebimentos if datetime.strptime(str(r['dia']), '%d').month == mes and datetime.strptime(str(r['dia']), '%d').year == ano]
+        gastos_mes = [g for gastos in self.gastos.values() for g in gastos if datetime.strptime(str(g['dia']), '%d').month == mes and datetime.strptime(str(g['dia']), '%d').year == ano]
+
+        total_recebimentos = sum(r['valor'] for r in recebimentos_mes)
+        total_gastos = sum(g['valor'] for g in gastos_mes)
+
+        relatorio += f"Total de Recebimentos: R$ {total_recebimentos:.2f}\n"
+        relatorio += f"Total de Gastos: R$ {total_gastos:.2f}\n"
+        relatorio += f"Saldo do Mês: R$ {total_recebimentos - total_gastos:.2f}\n"
+
+        nome_arquivo = f"relatorios/relatorio_mensal_{mes}_{ano}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        self.gerar_relatorio_txt(relatorio, nome_arquivo)
+
+    def relatorio_anual(self, ano):
+        relatorio = f"\n--- Relatório Anual: {ano} ---\n"
+        for mes in range(1, 13):
+            recebimentos_mes = [r for r in self.recebimentos if datetime.strptime(str(r['dia']), '%d').month == mes and datetime.strptime(str(r['dia']), '%d').year == ano]
+            gastos_mes = [g for gastos in self.gastos.values() for g in gastos if datetime.strptime(str(g['dia']), '%d').month == mes and datetime.strptime(str(g['dia']), '%d').year == ano]
+
+            total_recebimentos = sum(r['valor'] for r in recebimentos_mes)
+            total_gastos = sum(g['valor'] for g in gastos_mes)
+
+            relatorio += f"\n--- Mês {mes} ---\n"
+            relatorio += f"Total de Recebimentos: R$ {total_recebimentos:.2f}\n"
+            relatorio += f"Total de Gastos: R$ {total_gastos:.2f}\n"
+            relatorio += f"Saldo do Mês: R$ {total_recebimentos - total_gastos:.2f}\n"
+
+        nome_arquivo = f"relatorios/relatorio_anual_{ano}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        self.gerar_relatorio_txt(relatorio, nome_arquivo)
 
     def adicionar_categoria(self, categoria):
         if categoria in self.categorias:
@@ -412,23 +456,6 @@ class FinancasPessoais:
             self.categorias.add(categoria)
             print(f"Categoria '{categoria}' adicionada com sucesso!")
             self.salvar_dados()
-
-    def relatorio_mensal(self, mes, ano):
-        print(f"\n--- Relatório Mensal: {mes}/{ano} ---")
-        recebimentos_mes = [r for r in self.recebimentos if datetime.strptime(str(r['dia']), '%d').month == mes and datetime.strptime(str(r['dia']), '%d').year == ano]
-        gastos_mes = [g for gastos in self.gastos.values() for g in gastos if datetime.strptime(str(g['dia']), '%d').month == mes and datetime.strptime(str(g['dia']), '%d').year == ano]
-
-        total_recebimentos = sum(r['valor'] for r in recebimentos_mes)
-        total_gastos = sum(g['valor'] for g in gastos_mes)
-
-        print(f"Total de Recebimentos: R$ {total_recebimentos:.2f}")
-        print(f"Total de Gastos: R$ {total_gastos:.2f}")
-        print(f"Saldo do Mês: R$ {total_recebimentos - total_gastos:.2f}")
-
-    def relatorio_anual(self, ano):
-        print(f"\n--- Relatório Anual: {ano} ---")
-        for mes in range(1, 13):
-            self.relatorio_mensal(mes, ano)
 
     def adicionar_investimento(self, valor, produto, banco, rendimento_mensal):
         investimento_existente = next((inv for inv in self.investimentos if inv['produto'] == produto and inv['banco'] == banco), None)
@@ -488,7 +515,8 @@ while True:
     if opcao == '1':
         valor = financas.solicitar_valor("Valor recebido: R$ ")
         dia = int(input("Dia do recebimento (1-31): "))
-        financas.adicionar_recebimento(valor, dia)
+        descricao = input("Descrição do recebimento: ")
+        financas.adicionar_recebimento(valor, dia, descricao)
 
     elif opcao == '2':
         valor = financas.solicitar_valor("Valor gasto: R$ ")
