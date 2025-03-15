@@ -14,23 +14,9 @@ O **Sistema de Finanças Pessoais** é um programa em Python que ajuda você a g
 - **Estatísticas Mensais**: Visualize o saldo atual, gastos por categoria, parcelas pendentes, faturas e investimentos.
 - **Relatórios Mensais/Anuais**: Gere relatórios detalhados de recebimentos e gastos por mês ou ano.
 - **Relatório Completo**: Gere um relatório detalhado de todas as transações, parcelas e investimentos.
-
----
-
-## Novas Funcionalidades
-
-### Categorias Personalizadas
-- Adicione novas categorias de gastos dinamicamente.
-- As categorias são salvas automaticamente e podem ser usadas em novos gastos.
-
-### Relatórios Mensais/Anuais
-- **Relatório Mensal**: Visualize o total de recebimentos, gastos e saldo de um mês específico.
-- **Relatório Anual**: Analise o desempenho financeiro ao longo de um ano, com dados agrupados por mês.
-
-### Investimentos
-- **Cadastro de Investimentos**: Registre investimentos com valor, produto, banco e rendimento mensal.
-- **Adicionar Valor a Investimentos Existentes**: Adicione valores a investimentos já cadastrados.
-- **Rendimentos Mensais**: Registre rendimentos mensais para acompanhar o crescimento dos investimentos.
+- **Categorias Personalizadas**: Adicione novas categorias de gastos dinamicamente.
+- **Orçamento Mensal por Categoria**: Defina um orçamento mensal para cada categoria de gastos e receba alertas quando estiver próximo de ultrapassá-lo.
+- **Rendimentos de Investimentos**: Registre rendimentos mensais para acompanhar o crescimento dos investimentos.
 
 ---
 
